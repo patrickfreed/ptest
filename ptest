@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Public test utility for CMSC216
+# Patrick Freed
+
+project_name="unknown"
+
+if [ ! -e "Makefile" ]; then
+    echo "No Makefile, cannot compile"
+    exit 1
+fi
+
+if [ -e ".submit" ]; then
+    project_name=`grep "projectNumber" .submit | cut -d'=' -f2`
+fi
+
+echo "Testing $project_name..."
+make clean > /dev/null
+compile=`make`
+
+if [ "$?" -ne 0 ]; then
+    echo "Did not compile, exiting."
+    echo "$compile"
+    exit 1
+fi
+
+x=1
+while [ -e "public0$x" ]; do
+    echo "==== public0$x ===="
+    output=`./"public0$x"`
+    echo "$output" | diff "public0$x.output" - > /dev/null
+
+    if [ "$?" -eq 0 ]; then
+	echo "Passed!"
+    else
+	echo "$output" | diff "public0$x.output" -
+    fi
+    
+    ((x++))
+done
